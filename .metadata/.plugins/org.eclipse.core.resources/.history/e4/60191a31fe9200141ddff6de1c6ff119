@@ -1,0 +1,23 @@
+package com.example.gradeplanner;
+
+import android.graphics.Color;
+import android.view.MotionEvent;
+import android.view.View;
+import android.widget.TableRow;
+
+import com.example.gradeplanner.R.color;
+
+public class MyOnTouchListener implements View.OnTouchListener{
+	public boolean onTouch(View view, MotionEvent event) {
+		switch (event.getAction()) {
+        case MotionEvent.ACTION_DOWN:
+            ((TableRow) view).setBackgroundColor(color.grey);
+            break;
+        case MotionEvent.ACTION_CANCEL:
+        case MotionEvent.ACTION_UP:
+            ((TableRow) view).setBackgroundColor(Color.WHITE);
+            break;
+        }
+		return false;
+	}
+}

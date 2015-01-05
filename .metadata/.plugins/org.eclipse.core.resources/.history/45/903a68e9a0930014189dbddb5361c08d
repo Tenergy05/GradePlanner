@@ -1,0 +1,45 @@
+package com.example.gradeplanner;
+
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
+import android.database.sqlite.SQLiteDatabase;
+import android.view.View;
+
+public class MyClickListener implements OnClickListener{
+
+	private String itemID;
+	private CourseDBHelper dbHelper;
+	
+	public MyClickListener(String itemID, Context context){
+		super();
+		this.itemID = itemID;
+		this.dbHelper = new CourseDBHelper(context);
+	}
+	
+	public void onClick(DialogInterface dialog, int which) {
+		switch(which){
+		   case 0:
+			   break;
+		   case 1:
+			   break;
+		   case 2:
+			   break;
+		}
+		
+	}
+	
+	private void deleteMark(){
+		SQLiteDatabase db=dbHelper.getWritableDatabase();
+		
+	}
+	
+	private void updateMark(double newMark){
+		SQLiteDatabase db=dbHelper.getWritableDatabase();
+	}
+	
+	private void updateWeight(double newWeight){
+		SQLiteDatabase db=dbHelper.getWritableDatabase();
+	}
+
+}

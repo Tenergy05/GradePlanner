@@ -1,0 +1,85 @@
+package com.example.gradeplanner;
+
+import android.app.AlertDialog;
+import android.content.ContentValues;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
+import android.database.sqlite.SQLiteDatabase;
+import android.text.InputType;
+import android.view.View;
+import android.widget.EditText;
+
+public class MyClickListener implements OnClickListener{
+
+	private String itemID;
+	private CourseDBHelper dbHelper;
+	private Context context;
+	
+	public MyClickListener(String itemID, Context context){
+		super();
+		this.itemID = itemID;
+		this.context = context;
+		this.dbHelper = new CourseDBHelper(context);
+	}
+	
+	public void onClick(DialogInterface dialog, int which) {
+		switch(which){
+		   case 0: deleteMark();
+			   break;
+		   case 1: updateMark();
+			   break;
+		   case 2: updateWeight();
+			   break;
+		}
+		
+	}
+	
+	private void deleteMark(){
+		SQLiteDatabase db=dbHelper.getWritableDatabase();
+		db.delete("Tests", "_ID =?", new String[]{itemID});
+		db.close();
+	}
+	
+	private void updateMark(){		
+		
+		AlertDialog.Builder builder = new AlertDialog.Builder(context);
+		builder.setTitle("Enter New Grade");
+		final EditText input = new EditText(context);
+		input.setInputType(InputType.TYPE_NUMBER_FLAG_DECIMAL);
+		builder.setView(input);
+		builder.setPositiveButton("Ok", new OnClickListener(){
+
+			public void onClick(DialogInterface dialog, int which) {
+				SQLiteDatabase db=dbHelper.getWritableDatabase();
+				ContentValues values =new ContentValues();
+				values.put("Grade", Double.parseDouble(input.getText().toString()));
+				db.update("Tests", values, "_ID =?", new String[]{itemID});
+				db.close();
+			}
+			
+		});
+		builder.create();
+	}
+	
+	private void updateWeight(){
+		AlertDialog.Builder builder = new AlertDialog.Builder(context);
+		builder.setTitle("Enter New Weight");
+		final EditText input = new EditText(context);
+		input.setInputType(InputType.TYPE_NUMBER_FLAG_DECIMAL);
+		builder.setView(input);
+		builder.setPositiveButton("Ok", new OnClickListener(){
+
+			public void onClick(DialogInterface dialog, int which) {
+				SQLiteDatabase db=dbHelper.getWritableDatabase();
+				ContentValues values =new ContentValues();
+				values.put("Weight", Double.parseDouble(input.getText().toString()));
+				db.update("Tests", values, "_ID =?", new String[]{itemID});
+				db.close();
+			}
+			
+		});
+		builder.create();
+	}
+
+}

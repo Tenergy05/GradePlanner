@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Grade Planner</string>
+    <string name="add_course">Add Course</string>
+    <string name="course">Course</string>
+    <string name="grade">Grade</string>
+    <string name="goal">Goal</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_add_course">Add Course</string>
+    <string name="course_code">Course Code</string>
+    <string name="grade_goal">Grade Goal</string>
+    <string name="add_mark">Add Mark</string>
+
+</resources>

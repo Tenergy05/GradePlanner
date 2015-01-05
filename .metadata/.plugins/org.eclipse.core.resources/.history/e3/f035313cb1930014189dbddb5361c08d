@@ -1,0 +1,142 @@
+package com.example.gradeplanner;
+
+import java.util.ArrayList;
+
+import com.example.gradeplanner.CourseContract.CourseEntry;
+import com.example.gradeplanner.CourseContract.TestEntry;
+
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.ContentValues;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.text.InputType;
+import android.widget.EditText;
+
+public class MyClickListener implements OnClickListener{
+
+	private String itemID;
+	private CourseDBHelper dbHelper;
+	private Activity activity;
+	
+	public MyClickListener(String itemID, Activity activity){
+		super();
+		this.itemID = itemID;
+		this.activity = activity;
+		this.dbHelper = new CourseDBHelper(activity);
+	}
+	
+	public void onClick(DialogInterface dialog, int which) {
+		switch(which){
+		   case 0: deleteMark();
+			   break;
+		   case 1: updateMark();
+			   break;
+		   case 2: updateWeight();
+			   break;
+		}
+		
+	}
+	
+	private void deleteMark(){
+		SQLiteDatabase db=dbHelper.getWritableDatabase();
+		db.delete("Tests", "_ID =?", new String[]{itemID});
+		db.close();
+	}
+	
+	private void updateMark(){		
+		
+		AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+		builder.setTitle("Enter New Grade");
+		final EditText input = new EditText(activity);
+		input.setInputType(InputType.TYPE_CLASS_NUMBER|InputType.TYPE_NUMBER_FLAG_DECIMAL);
+		builder.setView(input);
+		builder.setPositiveButton("Ok", new OnClickListener(){
+
+			public void onClick(DialogInterface dialog, int which) {
+				SQLiteDatabase db=dbHelper.getWritableDatabase();
+				ContentValues values =new ContentValues();
+				values.put("Grade", Double.parseDouble(input.getText().toString()));
+				db.update("Tests", values, "_ID =?", new String[]{itemID});
+				db.close();
+				computeGrade(activity.getTitle());
+				activity.recreate();
+			}
+			
+		});
+		builder.show();
+	}
+	
+	private void updateWeight(){
+		AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+		builder.setTitle("Enter New Weight");
+		final EditText input = new EditText(activity);
+		input.setInputType(InputType.TYPE_CLASS_NUMBER|InputType.TYPE_NUMBER_FLAG_DECIMAL);
+		
+		builder.setView(input);
+		builder.setPositiveButton("Ok", new OnClickListener(){
+
+			public void onClick(DialogInterface dialog, int which) {
+				SQLiteDatabase db=dbHelper.getWritableDatabase();
+				ContentValues values =new ContentValues();
+				values.put("Weight", Double.parseDouble(input.getText().toString()));
+				db.update("Tests", values, "_ID =?", new String[]{itemID});
+				db.close();
+				activity.recreate();
+			}
+			
+		});
+		builder.show();
+	}
+
+	private void computeGrade(String courseCode){
+		double finalGrade=0;
+		double totalWeight=0;
+		ArrayList<Double> grades =new ArrayList<Double>();
+		ArrayList<Double> weights=new ArrayList<Double>();
+		
+		SQLiteDatabase db = dbHelper.getReadableDatabase();
+		
+		String selectQuery="select * from Tests where CourseCode like '"+courseCode+"'";
+		
+		Cursor c = db.rawQuery(selectQuery,null);
+		int numTest=c.getCount();
+        c.moveToFirst();
+        
+        for(int i=0;i<numTest;i++){
+        	double grade = Double.parseDouble(c.getString(
+        			c.getColumnIndex(TestEntry.COLUMN_NAME_GRADE)));
+        	double weight = Double.parseDouble(c.getString(
+        			c.getColumnIndex(TestEntry.COLUMN_NAME_WEIGHT)));
+        	
+        	if(c.getString(c.getColumnIndex(TestEntry.COLUMN_NAME_TYPE)).contains("SPECIAL"))
+        		for(int j=0;j<grades.size();j++)
+        			if(grade>grades.get(j)){
+        				finalGrade-=grades.get(j)*weights.get(j);
+        				finalGrade+=grade*weights.get(j);
+        				grades.set(j, grade);
+        			}
+        	
+        	grades.add(grade);
+        	weights.add(weight);
+        	finalGrade+=grade*weight;
+        	totalWeight+=weight;
+        	c.moveToNext();
+        }
+        db.close();
+        finalGrade/=totalWeight;
+		
+		SQLiteDatabase db2 = dbHelper.getWritableDatabase();
+		ContentValues values= new ContentValues();
+		values.put(CourseEntry.COLUMN_NAME_GRADE, finalGrade);
+		String selection = CourseEntry.COLUMN_NAME_COURSE_CODE + " LIKE ?";
+		String[] selectionArgs = { courseCode };
+		db2.update(
+			    CourseEntry.TABLE_NAME,
+			    values,
+			    selection,
+			    selectionArgs);
+	}
+}

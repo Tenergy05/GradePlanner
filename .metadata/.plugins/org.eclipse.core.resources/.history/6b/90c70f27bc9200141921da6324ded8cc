@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Grade Planner</string>
+    <string name="add_course">Add Course</string>
+    <string name="course">Course</string>
+    <string name="grade">Grade</string>
+    <string name="goal">Goal</string>
+    <string name="weight">Weight</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_add_course">Add Course</string>
+    <string name="course_code">Course Code</string>
+    <string name="grade_goal">Course Goal</string>
+    <string name="add_mark">Add Mark</string>
+    <string name="percentage">%</string>
+    <string name="submit">Submit</string>
+    <string name="title_activity_add_mark">Add Mark</string>
+    <string name="eval_name">Evaluation Name</string>
+    <string name="eval_type">Evaluation Type</string>
+    <string name="special_type">Replace all lower marks</string>
+    <string name="title_activity_view_course">View Course</string>
+    <string name="clear_courses">Clear Courses</string>
+
+</resources>

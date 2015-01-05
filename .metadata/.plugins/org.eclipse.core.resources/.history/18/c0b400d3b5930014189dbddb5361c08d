@@ -1,0 +1,22 @@
+package com.example.gradeplanner;
+
+import android.app.Activity;
+import android.app.AlertDialog;
+
+public class InputValidator {
+	
+	public static boolean checkNumberInput(String number, Activity activity){
+		AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+		builder.setMessage("Please enter a number from 0 to 100.");
+		
+		try{
+			if(Double.parseDouble(number)<=100)
+				return true;
+			builder.show();
+			
+		}catch(Exception e){
+			builder.show();
+		}
+		return false;
+	}
+}

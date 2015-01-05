@@ -1,0 +1,27 @@
+package com.example.gradeplanner;
+
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
+
+public class MyClickListener implements OnClickListener{
+
+	private String itemName;
+	
+	public MyClickListener(String itemName){
+		super();
+		
+	}
+	
+	public void onClick(DialogInterface dialog, int which) {
+		switch(which){
+		   case 0:
+			   break;
+		   case 1:
+			   break;
+		   case 2:
+			   break;
+		}
+		
+	}
+
+}

@@ -1,0 +1,13 @@
+package com.example.gradeplanner;
+
+import android.view.View;
+import android.view.View.OnLongClickListener;
+
+public class MyOnLongClickListener implements OnLongClickListener{
+
+	public boolean onLongClick(View v) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+}

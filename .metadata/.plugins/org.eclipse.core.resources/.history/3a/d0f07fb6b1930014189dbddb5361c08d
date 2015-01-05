@@ -1,0 +1,156 @@
+package com.example.gradeplanner;
+
+import com.example.gradeplanner.CourseContract.CourseEntry;
+import com.example.gradeplanner.CourseContract.TestEntry;
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Color;
+import android.os.Bundle;
+import android.text.InputType;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.EditText;
+import android.widget.TableLayout;
+import android.widget.TableRow;
+import android.widget.TextView;
+
+public class ViewCourseActivity extends Activity {
+
+	private CourseDBHelper dbHelper = new CourseDBHelper(this);
+	private AlertDialog.Builder builder;
+	
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_view_course);
+		
+		Intent intent=getIntent();
+		int courseNum=intent.getIntExtra(MainActivity.EXTRA_COURSENUM,-1);
+		
+		SQLiteDatabase db = dbHelper.getReadableDatabase();
+		
+		String[] projection = {
+	        	CourseEntry._ID,
+		        CourseEntry.COLUMN_NAME_COURSE_CODE,
+		        CourseEntry.COLUMN_NAME_GRADE,
+		        CourseEntry.COLUMN_NAME_GOAL
+	        };
+
+        String sortOrder = CourseEntry._ID + " DESC";
+
+        Cursor c = db.query(
+        	CourseEntry.TABLE_NAME,
+	        projection,
+	        null,
+	        null,
+	        null,
+	        null,
+	        sortOrder
+        );
+        c.moveToFirst();
+        for(int i=0;i<courseNum;i++)
+        	c.moveToNext();
+        
+        String courseCode = c.getString(c.getColumnIndex(CourseEntry.COLUMN_NAME_COURSE_CODE));
+        setTitle(courseCode);
+        
+        double grade=c.getDouble(c.getColumnIndex(CourseEntry.COLUMN_NAME_GRADE));
+        double goal=c.getDouble(c.getColumnIndex(CourseEntry.COLUMN_NAME_GOAL));
+        c.close();
+        
+        TextView gradeView=(TextView)findViewById(R.id.grade);
+        gradeView.setText("Grade: " + round(grade));
+        
+        TextView goalView=(TextView)findViewById(R.id.goal);
+        goalView.setText("Goal: " + goal);       
+        
+        c=db.rawQuery("select*from Tests WHERE CourseCode =?", new String[]{courseCode});
+        c.moveToFirst();
+        int numTests=c.getCount();
+        
+        TableLayout tl=(TableLayout)findViewById(R.id.tableLayout);
+        double totalWeight=0;
+        
+        for(int i=0;i<numTests;i++){
+        	TableRow tr= new TableRow(this);
+        	tr.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT));
+        	tr.setBackgroundColor(Color.WHITE);
+        	tr.setTag(c.getString(c.getColumnIndex(TestEntry._ID)));
+        	tr.setOnTouchListener(new MyOnTouchListener());
+        	
+        	tr.setOnClickListener(new View.OnClickListener() {
+				public void onClick(View view) {
+					String[] dialogOptions = {"Delete Item", "Change Grade", "Change Weight"};
+					builder= new AlertDialog.Builder(view.getContext());
+					builder.setTitle(R.string.choose_action)
+						.setCancelable(true)
+			            .setItems(dialogOptions, new MyClickListener(
+			            		view.getTag().toString(),(Activity) view.getContext()));
+					builder.show();
+				}
+			});
+        	
+        	TextView t1= new TextView(this);
+        	t1.setTag("t"+i);
+        	t1.setLayoutParams(new TableRow.LayoutParams(
+        			TableRow.LayoutParams.WRAP_CONTENT,
+        			TableRow.LayoutParams.WRAP_CONTENT,0.5f));
+        	t1.setText(c.getString(c.getColumnIndex(TestEntry.COLUMN_NAME_TEST_NAME)));
+        	tr.addView(t1);
+        	
+        	TextView t2= new TextView(this);
+        	t2.setLayoutParams(new TableRow.LayoutParams(
+        			TableRow.LayoutParams.WRAP_CONTENT,
+        			TableRow.LayoutParams.WRAP_CONTENT,0.25f));
+        	double mark = c.getDouble(c.getColumnIndex(TestEntry.COLUMN_NAME_GRADE));
+        	t2.setText(round(mark)+"");
+        	tr.addView(t2);
+        	
+        	TextView t3= new TextView(this);
+        	t3.setLayoutParams(new TableRow.LayoutParams(
+        			TableRow.LayoutParams.WRAP_CONTENT,
+        			TableRow.LayoutParams.WRAP_CONTENT,0.25f));
+        	double weight=c.getDouble(c.getColumnIndex(TestEntry.COLUMN_NAME_WEIGHT));
+        	totalWeight+=weight;
+        	t3.setText(weight+"");
+        	tr.addView(t3);
+        	tl.addView(tr, i+5);
+        	c.moveToNext();
+        }
+        TextView plan = (TextView)findViewById(R.id.planText);
+        double targetAverage = (goal*100 - grade*totalWeight)/(100-totalWeight);
+        plan.setText("Obtain an average of " + round(targetAverage) + "% on remaining evaluations.");
+	}
+	
+	private double round(double d){
+		return Math.round(d*100)/100;
+	}
+
+	public boolean onOptionsItemSelected(MenuItem item) {
+		int id = item.getItemId();
+		if (id == R.id.action_settings) {
+			return true;
+		}
+		return super.onOptionsItemSelected(item);
+	}
+	
+	public void deleteCourse(View view){
+		SQLiteDatabase db = dbHelper.getWritableDatabase();
+		db.delete("Courses", "CourseCode =?", new String[]{getTitle().toString()});
+		db.close();
+		Intent intent = new Intent(this,MainActivity.class);
+		startActivity(intent);
+	}
+	
+	public void updateGoal(View view){
+		builder= new AlertDialog.Builder(this);
+		builder.setTitle("Enter New Goal");
+		final EditText input = new EditText(this);
+		input.setInputType(InputType.TYPE_CLASS_NUMBER);
+		builder.setView(input);
+		builder.setPositiveButton("Ok", new UpdateGoalListener(input,this));
+		builder.show();
+	}
+}
